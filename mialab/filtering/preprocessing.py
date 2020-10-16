@@ -6,6 +6,7 @@ import warnings
 
 import pymia.filtering.filter as pymia_fltr
 import SimpleITK as sitk
+import numpy as np
 
 
 class ImageNormalization(pymia_fltr.Filter):
@@ -28,8 +29,8 @@ class ImageNormalization(pymia_fltr.Filter):
 
         img_arr = sitk.GetArrayFromImage(image)
 
-        # todo: normalize the image using numpy
-        warnings.warn('No normalization implemented. Returning unprocessed image.')
+        # Normalize image subtracting the mean intensity and dividing by the standard deviation
+        img_arr = (img_arr - np.mean(img_arr))/np.std(img_arr)
 
         img_out = sitk.GetImageFromArray(img_arr)
         img_out.CopyInformation(image)
@@ -73,12 +74,11 @@ class SkullStripping(pymia_fltr.Filter):
             params (SkullStrippingParameters): The parameters with the brain mask.
 
         Returns:
-            sitk.Image: The normalized image.
+            sitk.Image: The masked image.
         """
         mask = params.img_mask  # the brain mask
 
-        # todo: remove the skull from the image by using the brain mask
-        warnings.warn('No skull-stripping implemented. Returning unprocessed image.')
+        sitk.Mask(image, mask)
 
         return image
 
@@ -125,14 +125,11 @@ class ImageRegistration(pymia_fltr.Filter):
         Returns:
             sitk.Image: The registered image.
         """
-
-        # todo: replace this filter by a registration. Registration can be costly, therefore, we provide you the
-        # transformation, which you only need to apply to the image!
-        warnings.warn('No registration implemented. Returning unregistered image')
-
         atlas = params.atlas
         transform = params.transformation
         is_ground_truth = params.is_ground_truth  # the ground truth will be handled slightly different
+
+        image = sitk.Resample(image, atlas, transform, sitk.sitkLinear, 0.0, image.GetPixelIDValue())
 
         # note: if you are interested in registration, and want to test it, have a look at
         # pymia.filtering.registration.MultiModalRegistration. Think about the type of registration, i.e.
