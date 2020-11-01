@@ -30,7 +30,7 @@ class ImageNormalization(pymia_fltr.Filter):
         img_arr = sitk.GetArrayFromImage(image)
 
         # Normalize image subtracting the mean intensity and dividing by the standard deviation
-        img_arr = (img_arr - np.mean(img_arr))/np.std(img_arr)
+        #img_arr = (img_arr - np.mean(img_arr))/np.std(img_arr)
 
         img_out = sitk.GetImageFromArray(img_arr)
         img_out.CopyInformation(image)

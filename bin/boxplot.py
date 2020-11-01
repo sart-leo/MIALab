@@ -72,7 +72,7 @@ def metric_to_readable_text(metric: str):
 def main(csv_file: str, plot_dir: str):
     metrics = ('DICE', 'HDRFDST')  # the metrics we want to plot the results for
     metrics_yaxis_limits = ((0.0, 1.0), (0.0, None))  # tuples of y-axis limits (min, max) for each metric. Use None if unknown
-    labels = ('WhiteMatter', 'Amygdala')  # the brain structures/tissues you are interested in
+    labels = ('WhiteMatter', 'Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus')  # the brain structures/tissues you are interested in
 
     # load the CSVs. We usually want to compare different methods (e.g. a set of different features), therefore,
     # we load two CSV (for simplicity, it is the same here)
@@ -82,7 +82,7 @@ def main(csv_file: str, plot_dir: str):
     dfs = [df_method1, df_method2]
 
     # some parameters to improve the plot's readability
-    methods = ('Method 1', 'Method 2')
+    methods = ('Not normalized', '...')
     title = 'Your experiment comparing method 1 and 2 on {}'
 
     for label in labels:
@@ -106,14 +106,14 @@ if __name__ == '__main__':
     parser.add_argument(
         '--csv_file',
         type=str,
-        default='../results/results.csv',
+        default='mia-result/2020-11-01-15-25-45/results.csv',
         help='Path to the result CSV file.'
     )
 
     parser.add_argument(
         '--plot_dir',
         type=str,
-        default='../results',
+        default='mia-result/2020-11-01-15-25-45/',
         help='Path to the plot directory.'
     )
 
