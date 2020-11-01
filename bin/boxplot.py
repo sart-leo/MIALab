@@ -69,7 +69,7 @@ def metric_to_readable_text(metric: str):
         raise ValueError('Metric "{}" unknown'.format(metric))
 
 
-def main(csv_file: str, plot_dir: str):
+def main(csv_file1: str, csv_file2: str, plot_dir: str):
     metrics = ('DICE', 'HDRFDST')  # the metrics we want to plot the results for
     metrics_yaxis_limits = ((0.0, 1.0), (0.0, None))  # tuples of y-axis limits (min, max) for each metric. Use None if unknown
     labels = ('WhiteMatter', 'Amygdala', 'GreyMatter', 'Hippocampus', 'Thalamus')  # the brain structures/tissues you are interested in
@@ -77,8 +77,8 @@ def main(csv_file: str, plot_dir: str):
     # load the CSVs. We usually want to compare different methods (e.g. a set of different features), therefore,
     # we load two CSV (for simplicity, it is the same here)
     # todo: adapt to your needs to compare different methods (e.g. load different CSVs)
-    df_method1 = pd.read_csv(csv_file, sep=';')
-    df_method2 = pd.read_csv(csv_file, sep=';')
+    df_method1 = pd.read_csv(csv_file1, sep=';')
+    df_method2 = pd.read_csv(csv_file2, sep=';')
     dfs = [df_method1, df_method2]
 
     # some parameters to improve the plot's readability
@@ -104,7 +104,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Result plotting.')
 
     parser.add_argument(
-        '--csv_file',
+        '--csv_file1',
+        type=str,
+        default='mia-result/unnormalized/results.csv',
+        help='Path to the result CSV file.'
+    )
+
+    parser.add_argument(
+        '--csv_file2',
         type=str,
         default='mia-result/2020-11-01-15-25-45/results.csv',
         help='Path to the result CSV file.'
@@ -118,4 +125,4 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
-    main(args.csv_file, args.plot_dir)
+    main(args.csv_file1, args.csv_file2, args.plot_dir)
