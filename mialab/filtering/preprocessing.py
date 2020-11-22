@@ -9,8 +9,46 @@ import SimpleITK as sitk
 import numpy as np
 
 
-class ImageNormalization(pymia_fltr.Filter):
+class ImageNormalizationLog(pymia_fltr.Filter):
     """Represents a normalization filter."""
+
+    def __init__(self):
+        """Initializes a new instance of the ImageNormalization class."""
+        super().__init__()
+
+    def execute(self, image: sitk.Image, params: pymia_fltr.FilterParams = None) -> sitk.Image:
+        """Executes a Log normalization on an image.
+
+        Args:
+            image (sitk.Image): The image.
+            params (FilterParams): The parameters (unused).
+
+        Returns:
+            sitk.Image: The Log-normalized image.
+        """
+
+        img_arr = sitk.GetArrayFromImage(image)
+
+        regularization = 0.00000001
+        img_arr = np.log(img_arr + regularization)
+
+        img_out = sitk.GetImageFromArray(img_arr)
+        img_out.CopyInformation(image)
+
+        return img_out
+
+    def __str__(self):
+        """Gets a printable string representation.
+
+        Returns:
+            str: String representation.
+        """
+        return 'ImageNormalizationLog:\n' \
+            .format(self=self)
+
+
+class ImageNormalizationZScore(pymia_fltr.Filter):
+    """Represents a Z-Score normalization filter."""
 
     def __init__(self):
         """Initializes a new instance of the ImageNormalization class."""
@@ -30,10 +68,7 @@ class ImageNormalization(pymia_fltr.Filter):
         img_arr = sitk.GetArrayFromImage(image)
 
         # Normalize image subtracting the mean intensity and dividing by the standard deviation
-        #img_arr = (img_arr - np.mean(img_arr))/np.std(img_arr)
-
-        regularization = 0.00000001
-        img_arr = np.log(img_arr + regularization)
+        img_arr = (img_arr - np.mean(img_arr))/np.std(img_arr)
 
         img_out = sitk.GetImageFromArray(img_arr)
         img_out.CopyInformation(image)
@@ -43,10 +78,86 @@ class ImageNormalization(pymia_fltr.Filter):
     def __str__(self):
         """Gets a printable string representation.
 
-        Returns:
-            str: String representation.
+            Returns:
+        str: String representation.
         """
-        return 'ImageNormalization:\n' \
+        return 'ImageNormalizationZScore:\n' \
+            .format(self=self)
+
+
+class ImageNormalizationMinMax(pymia_fltr.Filter):
+    """Represents a MinMax normalization filter."""
+
+    def __init__(self):
+        """Initializes a new instance of the ImageNormalization class."""
+        super().__init__()
+
+    def execute(self, image: sitk.Image, params: pymia_fltr.FilterParams = None) -> sitk.Image:
+        """Executes a normalization on an image.
+
+        Args:
+            image (sitk.Image): The image.
+            params (FilterParams): The parameters (unused).
+
+        Returns:
+            sitk.Image: The normalized image.
+        """
+
+        img_arr = sitk.GetArrayFromImage(image)
+
+        # TODO change to MinMax normalization
+        img_arr = (img_arr - np.mean(img_arr)) / np.std(img_arr)
+
+        img_out = sitk.GetImageFromArray(img_arr)
+        img_out.CopyInformation(image)
+
+        return img_out
+
+    def __str__(self):
+        """Gets a printable string representation.
+
+            Returns:
+        str: String representation.
+        """
+        return 'ImageNormalizationMinMax:\n' \
+            .format(self=self)
+
+
+class ImageNormalizationClipping(pymia_fltr.Filter):
+    """Represents a Clipping normalization filter."""
+
+    def __init__(self):
+        """Initializes a new instance of the ImageNormalization class."""
+        super().__init__()
+
+    def execute(self, image: sitk.Image, params: pymia_fltr.FilterParams = None) -> sitk.Image:
+        """Executes a normalization on an image.
+
+        Args:
+            image (sitk.Image): The image.
+            params (FilterParams): The parameters (unused).
+
+        Returns:
+            sitk.Image: The normalized image.
+        """
+
+        img_arr = sitk.GetArrayFromImage(image)
+
+        # TODO change to Clippin normalization
+        img_arr = (img_arr - np.mean(img_arr)) / np.std(img_arr)
+
+        img_out = sitk.GetImageFromArray(img_arr)
+        img_out.CopyInformation(image)
+
+        return img_out
+
+    def __str__(self):
+        """Gets a printable string representation.
+
+            Returns:
+        str: String representation.
+        """
+        return 'ImageNormalizationClipping:\n' \
             .format(self=self)
 
 
