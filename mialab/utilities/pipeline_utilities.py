@@ -20,7 +20,7 @@ import mialab.utilities.multi_processor as mproc
 
 atlas_t1 = sitk.Image()
 atlas_t2 = sitk.Image()
-
+reference_img = sitk.Image()
 
 def load_atlas_images(directory: str):
     """Loads the T1 and T2 atlas images.
@@ -31,10 +31,13 @@ def load_atlas_images(directory: str):
 
     global atlas_t1
     global atlas_t2
-    global reference_hist_img
+    global reference_img
     atlas_t1 = sitk.ReadImage(os.path.join(directory, 'mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz'))
     atlas_t2 = sitk.ReadImage(os.path.join(directory, 'mni_icbm152_t2_tal_nlin_sym_09a.nii.gz'))
-    reference_hist_img = sitk.ReadImage('/Users/leo/Documents/MBE/Semester_3/Medical_image_analysis_lab/MIALab/data/train/100307/T1native.nii.gz')
+    reference_img = sitk.ReadImage('/Users/leo/Documents/MBE/Semester_3/Medical_image_analysis_lab/MIALab/data/train/100307/T1native.nii.gz')
+
+    #reference_img = sitk.Resample(atlas_t2, reference_img)
+
     if not conversion.ImageProperties(atlas_t1) == conversion.ImageProperties(atlas_t2):
         raise ValueError('T1w and T2w atlas images have not the same image properties')
 
@@ -205,6 +208,15 @@ def pre_process(id_: str, paths: dict, **kwargs) -> structure.BrainImage:
         img.images[structure.BrainImageTypes.BrainMask])
 
     # construct pipeline for T1w image pre-processing
+    pipeline_atlas_t1 = fltr.FilterPipeline()
+
+    pipeline_atlas_t1.add_filter(fltr_prep.SkullStripping())
+    pipeline_atlas_t1.set_param(fltr_prep.SkullStrippingParameters(img.images[structure.BrainImageTypes.BrainMask]),
+                            len(pipeline_atlas_t1.filters) - 1)
+
+    atlas_t1_noskull = pipeline_atlas_t1.execute(atlas_t1)
+
+    # construct pipeline for T1w image pre-processing
     pipeline_t1 = fltr.FilterPipeline()
     if kwargs.get('registration_pre', False):
         pipeline_t1.add_filter(fltr_prep.ImageRegistration())
@@ -215,10 +227,16 @@ def pre_process(id_: str, paths: dict, **kwargs) -> structure.BrainImage:
         pipeline_t1.set_param(fltr_prep.SkullStrippingParameters(img.images[structure.BrainImageTypes.BrainMask]),
                               len(pipeline_t1.filters) - 1)
     if kwargs.get('normalization_pre', False):
-        pipeline_t1.add_filter(fltr_prep.ImageNormalization())
+        #atlas_t1_noskull = sitk.Resample(atlas_t1_noskull, img.images[structure.BrainImageTypes.T1w])
+        #print(type(atlas_t1_noskull))
+        #print(type(img.images[structure.BrainImageTypes.BrainMask]))
+        #pipeline_t1.add_filter(fltr_prep.ImageNormalization())
         #pipeline_t1.add_filter(fltr_prep_pymia.HistogramMatcher())
-        #pipeline_t1.set_param(fltr_prep_pymia.HistogramMatcherParams(reference_hist_img),
+        #pipeline_t1.set_param(fltr_prep_pymia.HistogramMatcherParams(atlas_t1_noskull),
         #                      len(pipeline_t1.filters) - 1)
+        pipeline_t1.add_filter(fltr_prep.ImageNormalizationCMeans())
+        pipeline_t1.set_param(fltr_prep.CMeansParameters(img.images[structure.BrainImageTypes.GroundTruth]),
+                              len(pipeline_t1.filters) - 1)
 
     # execute pipeline on the T1w image
     img.images[structure.BrainImageTypes.T1w] = pipeline_t1.execute(img.images[structure.BrainImageTypes.T1w])
@@ -234,7 +252,7 @@ def pre_process(id_: str, paths: dict, **kwargs) -> structure.BrainImage:
         pipeline_t2.set_param(fltr_prep.SkullStrippingParameters(img.images[structure.BrainImageTypes.BrainMask]),
                               len(pipeline_t2.filters) - 1)
     if kwargs.get('normalization_pre', False):
-        pipeline_t2.add_filter(fltr_prep.ImageNormalization())
+        pipeline_t2.add_filter(fltr_prep.ImageNormalizationZScore())
 
     # execute pipeline on the T2w image
     img.images[structure.BrainImageTypes.T2w] = pipeline_t2.execute(img.images[structure.BrainImageTypes.T2w])

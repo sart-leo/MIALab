@@ -160,6 +160,61 @@ class ImageNormalizationClipping(pymia_fltr.Filter):
             .format(self=self)
 
 
+class CMeansParameters(pymia_fltr.FilterParams):
+    """Skull-stripping parameters."""
+
+    def __init__(self, img_mask: sitk.Image):
+        """Initializes a new instance of the CMeansParameters
+
+        Args:
+            img_mask (sitk.Image): The White Matter mask image.
+        """
+        self.img_mask = img_mask
+
+
+class ImageNormalizationCMeans(pymia_fltr.Filter):
+    """Represents a Clipping normalization filter."""
+
+    def __init__(self):
+        """Initializes a new instance of the ImageNormalization class."""
+        super().__init__()
+
+    def execute(self, image: sitk.Image, params: CMeansParameters = None) -> sitk.Image:
+        """Executes a normalization on an image.
+
+        Args:
+            image (sitk.Image): The image.
+            params (FilterParams): The parameters (unused).
+
+        Returns:
+            sitk.Image: The normalized image.
+        """
+        mask = params.img_mask  # the brain mask
+        mask = sitk.Resample(mask, image)
+
+        img_arr = sitk.GetArrayFromImage(image)
+        mask_arr = sitk.GetArrayFromImage(mask)
+        mask_arr[mask_arr != 1] = 0
+
+        mean = np.sum(img_arr[mask_arr == 1])/np.sum(mask_arr[mask_arr == 1])
+        cValue = 1000
+        img_arr = cValue*img_arr/mean
+
+        img_out = sitk.GetImageFromArray(img_arr)
+        img_out.CopyInformation(image)
+
+        return img_out
+
+    def __str__(self):
+        """Gets a printable string representation.
+
+            Returns:
+        str: String representation.
+        """
+        return 'ImageNormalizationCmeans:\n' \
+            .format(self=self)
+
+
 class SkullStrippingParameters(pymia_fltr.FilterParams):
     """Skull-stripping parameters."""
 
