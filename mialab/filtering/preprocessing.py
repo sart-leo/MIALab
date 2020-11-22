@@ -105,8 +105,7 @@ class ImageNormalizationMinMax(pymia_fltr.Filter):
 
         img_arr = sitk.GetArrayFromImage(image)
 
-        # TODO change to MinMax normalization
-        img_arr = (img_arr - np.mean(img_arr)) / np.std(img_arr)
+        img_arr = (img_arr - np.min(img_arr)) / (np.max(img_arr) - np.min(img_arr))
 
         img_out = sitk.GetImageFromArray(img_arr)
         img_out.CopyInformation(image)
@@ -143,8 +142,8 @@ class ImageNormalizationClipping(pymia_fltr.Filter):
 
         img_arr = sitk.GetArrayFromImage(image)
 
-        # TODO change to Clippin normalization
-        img_arr = (img_arr - np.mean(img_arr)) / np.std(img_arr)
+        img_arr[img_arr > 0.95 * np.max(img_arr)] = 0.95 * np.max(img_arr)
+        img_arr[img_arr < 1.05 * np.min(img_arr)] = 1.05 * np.min(img_arr)
 
         img_out = sitk.GetImageFromArray(img_arr)
         img_out.CopyInformation(image)
