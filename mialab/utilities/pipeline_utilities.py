@@ -7,6 +7,7 @@ import warnings
 import numpy as np
 import pymia.data.conversion as conversion
 import pymia.filtering.filter as fltr
+import pymia.filtering.preprocessing as fltr_prep_pymia
 import pymia.evaluation.evaluator as eval_
 import pymia.evaluation.metric as metric
 import SimpleITK as sitk
@@ -30,8 +31,10 @@ def load_atlas_images(directory: str):
 
     global atlas_t1
     global atlas_t2
+    global reference_hist_img
     atlas_t1 = sitk.ReadImage(os.path.join(directory, 'mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz'))
     atlas_t2 = sitk.ReadImage(os.path.join(directory, 'mni_icbm152_t2_tal_nlin_sym_09a.nii.gz'))
+    reference_hist_img = sitk.ReadImage('/Users/leo/Documents/MBE/Semester_3/Medical_image_analysis_lab/MIALab/data/train/100307/T1native.nii.gz')
     if not conversion.ImageProperties(atlas_t1) == conversion.ImageProperties(atlas_t2):
         raise ValueError('T1w and T2w atlas images have not the same image properties')
 
@@ -213,6 +216,9 @@ def pre_process(id_: str, paths: dict, **kwargs) -> structure.BrainImage:
                               len(pipeline_t1.filters) - 1)
     if kwargs.get('normalization_pre', False):
         pipeline_t1.add_filter(fltr_prep.ImageNormalization())
+        #pipeline_t1.add_filter(fltr_prep_pymia.HistogramMatcher())
+        #pipeline_t1.set_param(fltr_prep_pymia.HistogramMatcherParams(reference_hist_img),
+        #                      len(pipeline_t1.filters) - 1)
 
     # execute pipeline on the T1w image
     img.images[structure.BrainImageTypes.T1w] = pipeline_t1.execute(img.images[structure.BrainImageTypes.T1w])

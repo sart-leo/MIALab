@@ -82,7 +82,7 @@ def main(csv_file1: str, csv_file2: str, plot_dir: str):
     dfs = [df_method1, df_method2]
 
     # some parameters to improve the plot's readability
-    methods = ('Not normalized', '...')
+    methods = ('Not normalized', 'log-intensity')
     title = 'Your experiment comparing method 1 and 2 on {}'
 
     for label in labels:
@@ -113,14 +113,14 @@ if __name__ == '__main__':
     parser.add_argument(
         '--csv_file2',
         type=str,
-        default='mia-result/2020-11-01-15-25-45/results.csv',
+        default='mia-result/log_intensity/results.csv',
         help='Path to the result CSV file.'
     )
 
     parser.add_argument(
         '--plot_dir',
         type=str,
-        default='mia-result/2020-11-01-15-25-45/',
+        default='mia-result/log_intensity/',
         help='Path to the plot directory.'
     )
 

@@ -32,6 +32,9 @@ class ImageNormalization(pymia_fltr.Filter):
         # Normalize image subtracting the mean intensity and dividing by the standard deviation
         #img_arr = (img_arr - np.mean(img_arr))/np.std(img_arr)
 
+        regularization = 0.00000001
+        img_arr = np.log(img_arr + regularization)
+
         img_out = sitk.GetImageFromArray(img_arr)
         img_out.CopyInformation(image)
 
@@ -128,12 +131,14 @@ class ImageRegistration(pymia_fltr.Filter):
         atlas = params.atlas
         transform = params.transformation
         is_ground_truth = params.is_ground_truth  # the ground truth will be handled slightly different
-
-        image = sitk.Resample(image, atlas, transform, sitk.sitkLinear, 0.0, image.GetPixelIDValue())
-
-        # note: if you are interested in registration, and want to test it, have a look at
-        # pymia.filtering.registration.MultiModalRegistration. Think about the type of registration, i.e.
-        # do you want to register to an atlas or inter-subject? Or just ask us, we can guide you ;-)
+        if is_ground_truth:
+            # apply transformation to ground truth and brain mask using nearest neighbor interpolation
+            image = sitk.Resample(image, atlas, transform, sitk.sitkNearestNeighbor, 0,
+                                  image.GetPixelIDValue())
+        else:
+            # apply transformation to T1w and T2w images using linear interpolation
+            image = sitk.Resample(image, atlas, transform, sitk.sitkLinear, 0.0,
+                                  image.GetPixelIDValue())
 
         return image
 
