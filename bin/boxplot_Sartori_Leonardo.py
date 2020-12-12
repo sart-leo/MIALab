@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy import stats
 import os
 
 
@@ -9,8 +10,11 @@ def main():
     folder = "../mia-results-final/"
     data_dice, data_hdr, labels, dirs = loadData(folder)
     plotDice(data_dice, labels, dirs)
-    plotHdrf(data_hdr, labels, dirs)
+    #plotHdrf(data_hdr, labels, dirs)
     #plotHistograms(data_dice, labels, dirs)
+    ref = dirs.index('Unnormalised')
+
+    testKruskal(data_dice, ref, labels, dirs)
 
 
 def loadData(folder):
@@ -56,6 +60,18 @@ def plotHdrf(data_hdr, labels, dirs):
         ax.set_xticklabels(dirs, rotation=90)
         ax.set_ylim(0, np.max(data_hdr))
     plt.show()
+
+
+def testKruskal(data, ref, labels, dirs):
+    ref_data = data[ref, :, :]
+    results_k = np.zeros((len(dirs), len(labels), 2))
+    for h, d in enumerate(dirs):
+        for i, label in enumerate(labels):
+            stat_k, p_val_k = stats.kruskal(ref_data[:, i], data[h, :, i])
+            results_k[h, i] = [stat_k, p_val_k]
+
+
+    print(results_k[results_k[:, :, 0] > 3.84])
 
 
 def plotHistograms(data, labels, dirs, bins=20):
