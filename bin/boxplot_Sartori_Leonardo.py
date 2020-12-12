@@ -6,23 +6,49 @@ import os
 
 def main():
 
-    dirs = [dI for dI in os.listdir("mia-result/") if os.path.isdir(os.path.join("mia-result/", dI))]
-    for d in dirs:
-        results = pd.read_csv("mia-result/" + d + "/results.csv", sep=';')
+    dirs = [dI for dI in os.listdir("../mia-results-final/") if os.path.isdir(os.path.join("../mia-results-final/", dI))]
+
+    test_el = pd.read_csv("../mia-results-final/" + dirs[0] + "/results.csv", sep=';')
+    labels_t = set(test_el['LABEL'])
+    print(test_el)
+    data_dice = np.zeros((len(dirs), int(len(test_el) / len(labels_t)), len(labels_t)))
+    data_hdr = np.zeros_like(data_dice)
+
+    for h, d in enumerate(dirs):
+        results = pd.read_csv("../mia-results-final/" + d + "/results.csv", sep=';')
 
         labels = set(results['LABEL'])
 
-        data = np.zeros((int(len(results)/len(labels)), len(labels)))
-
         for i, label in enumerate(labels):
-            data[:, i] = results.loc[results['LABEL'] == label]['DICE']
+            data_dice[h, :, i] = results.loc[results['LABEL'] == label]['DICE']
+            data_hdr[h, :, i] = results.loc[results['LABEL'] == label]['HDRFDST']
 
-        fig, ax = plt.subplots()
-        ax.boxplot(data)
-        plt.title(d)
+    for i, label in enumerate(labels):
+        fig = plt.figure(figsize=(7, 7))
+        ax = fig.add_axes([0.1, 0.3, 0.8, 0.6])
+        plt.title(label)
+        ax.boxplot(data_dice[:, :, i].T)
         plt.ylabel('DSC')
+        ax.set_xticklabels(dirs, rotation=90)
         ax.set_ylim(0, 1)
-        plt.xticks(np.linspace(1, len(labels), len(labels)), labels)
+
+    for i, label in enumerate(labels):
+        fig = plt.figure(figsize=(7,7))
+        ax = fig.add_axes([0.1, 0.3, 0.8, 0.6])
+        plt.title(label)
+        ax.boxplot(data_hdr[:, :, i].T)
+        plt.ylabel('HDRFDST')
+        ax.set_xticklabels(dirs, rotation=90)
+        ax.set_ylim(0, np.max(data_hdr))
+        #fig.subplots_adjust(wspace=1)
+
+    for i, label in enumerate(labels):
+        for h, d in enumerate(dirs):
+            fig = plt.figure(figsize=(7, 7))
+            ax = fig.add_axes([0.1, 0.3, 0.8, 0.6])
+            plt.title(label)
+            ax.hist(data_hdr[h, :, i].T, bins=20)
+
     plt.show()
 
 
