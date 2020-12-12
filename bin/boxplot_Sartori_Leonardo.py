@@ -5,6 +5,7 @@ import os
 
 
 def main():
+    folder = "../mia-results-10-10/"
     folder = "../mia-results-final/"
     data_dice, data_hdr, labels, dirs = loadData(folder)
     plotDice(data_dice, labels, dirs)
@@ -22,7 +23,7 @@ def loadData(folder):
     data_hdr = np.zeros_like(data_dice)
 
     for h, d in enumerate(dirs):
-        results = pd.read_csv("../mia-results-final/" + d + "/results.csv", sep=';')
+        results = pd.read_csv(folder + d + "/results.csv", sep=';')
 
         labels = set(results['LABEL'])
 
@@ -57,13 +58,13 @@ def plotHdrf(data_hdr, labels, dirs):
     plt.show()
 
 
-def plotHistograms(data, labels, dirs):
+def plotHistograms(data, labels, dirs, bins=20):
     for i, label in enumerate(labels):
         for h, d in enumerate(dirs):
             fig = plt.figure(figsize=(7, 7))
             ax = fig.add_axes([0.1, 0.3, 0.8, 0.6])
             plt.title(label)
-            ax.hist(data[h, :, i].T, bins=20)
+            ax.hist(data[h, :, i].T, bins=bins)
     plt.show()
 
 
