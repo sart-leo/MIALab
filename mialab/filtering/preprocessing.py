@@ -48,7 +48,7 @@ class ImageNormalizationLog(pymia_fltr.Filter):
 
 
 class ImageNormalizationZScore(pymia_fltr.Filter):
-    """Represents a Z-Score normalization filter."""
+    """Represents a Z-score normalization filter."""
 
     def __init__(self):
         """Initializes a new instance of the ImageNormalization class."""

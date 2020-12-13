@@ -1,19 +1,24 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy import stats
 import os
+import statsmodels.api as sm
+from scipy import stats
+import pylab
+
+
 
 
 def main():
-    folder = "../mia-results-10-10/"
+    #folder = "../mia-results-10-10/"
     folder = "../mia-results-final/"
     data_dice, data_hdr, labels, dirs = loadData(folder)
-    plotDice(data_dice, labels, dirs)
+    #plotDice(data_dice, labels, dirs)
     #plotHdrf(data_hdr, labels, dirs)
-    #plotHistograms(data_dice, labels, dirs)
-    ref = dirs.index('Unnormalised')
+    #plotHistogram(data_dice[6,:,:], labels)
+    #qqPlot(data_dice, labels)
 
+    ref = dirs.index('Unnormalised')
     testKruskal(data_dice, ref, labels, dirs)
 
 
@@ -69,7 +74,8 @@ def testKruskal(data, ref, labels, dirs):
         for i, label in enumerate(labels):
             stat_k, p_val_k = stats.kruskal(ref_data[:, i], data[h, :, i])
             results_k[h, i] = [stat_k, p_val_k]
-
+            if stat_k > 3.84:
+                print(d, label)
 
     print(results_k[results_k[:, :, 0] > 3.84])
 
@@ -81,9 +87,27 @@ def plotHistograms(data, labels, dirs, bins=20):
             ax = fig.add_axes([0.1, 0.3, 0.8, 0.6])
             plt.title(label)
             ax.hist(data[h, :, i].T, bins=bins)
+
     plt.show()
 
 
+def plotHistogram(data, labels, bins=20):
+    for i, label in enumerate(labels):
+        fig = plt.figure(figsize=(7, 7))
+        ax = fig.add_axes([0.1, 0.3, 0.8, 0.6])
+        plt.title(label)
+        plt.xlabel('Dice coefficient')
+        plt.ylabel('Frequency')
+        ax.hist(data[:, i].T, bins=bins)
+    plt.show()
+
+
+
+def qqPlot(data, labels):
+    for i, label in enumerate(labels):
+        sm.qqplot(data[6, :, i], line='q')
+        pylab.title(label)
+    pylab.show()
 
 if __name__ == '__main__':
     main()
